@@ -3,15 +3,17 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from .models import CustomUser
 from django.contrib.auth.decorators import login_required
+from courses.models import Course
 
 @login_required
 def student_dashboard(request):
-    return render(request, 'student_dashboard.html')
+    courses = request.user.enrolled_courses.all()
+    return render(request, 'student_dashboard.html', {'courses': courses})
 
 @login_required
 def teacher_dashboard(request):
-    return render(request, 'teacher_dashboard.html')
-
+    courses = Course.objects.filter(created_by=request.user)
+    return render(request, 'teacher_dashboard.html', {'courses': courses})
 
 def register(request):
     if request.method == 'POST':

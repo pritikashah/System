@@ -1,0 +1,17 @@
+<h2>Available Courses</h2>
+
+{% for course in courses %}
+<h3>{{ course.title }}</h3>
+<p>{{ course.description }}</p>
+
+{% if user in course.students.all %}
+<p><strong>Already Enrolled</strong></p>
+{% else %}
+<form method="POST" action="{% url 'enroll_course' course.id %}">
+  {% csrf_token %}
+  <button type="submit">Enroll</button>
+</form>
+{% endif %}
+
+<hr />
+{% endfor %}
