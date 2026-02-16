@@ -1,0 +1,21 @@
+<h1>Teacher Dashboard</h1>
+
+<a href="{% url 'create_course' %}">Create Course</a>
+
+<hr />
+<h2>Your Courses</h2>
+
+{% if courses %}
+<ul>
+  {% for course in courses %}
+  <li>
+    {{ course.title }}
+    <a href="{% url 'delete_course' course.id %}">Delete</a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No courses created yet.</p>
+{% endif %}
+<br />
+<a href="{% url 'logout' %}">Logout</a>
