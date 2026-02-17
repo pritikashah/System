@@ -1,0 +1,36 @@
+<h2>{{ course.title }}</h2>
+<p>{{ course.description }}</p>
+
+<hr />
+
+<h3>Lessons</h3>
+
+{% if lessons %}
+<ul>
+  {% for lesson in lessons %}
+  <li>
+    <strong>{{ lesson.title }}</strong><br />
+    {{ lesson.content }}
+  </li>
+  <hr />
+  {% endfor %}
+</ul>
+{% else %}
+<p>No lessons added yet.</p>
+{% endif %} {% if user.user_type == 'teacher' and user == course.created_by %}
+<hr />
+<h3>Add New Lesson</h3>
+
+<form method="POST">
+  {% csrf_token %}
+  <input
+    type="text"
+    name="title"
+    placeholder="Lesson Title"
+    required
+  /><br /><br />
+  <textarea name="content" placeholder="Lesson Content" required></textarea
+  ><br /><br />
+  <button type="submit">Add Lesson</button>
+</form>
+{% endif %}

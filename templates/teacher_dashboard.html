@@ -9,7 +9,7 @@
 <ul>
   {% for course in courses %}
   <li>
-    {{ course.title }}
+    <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
     <a href="{% url 'delete_course' course.id %}">Delete</a>
   </li>
   {% endfor %}

@@ -5,7 +5,7 @@
 {% if courses %}
 <ul>
   {% for course in courses %}
-  <li>{{ course.title }}</li>
+  <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
   {% endfor %}
 </ul>
 {% else %}
