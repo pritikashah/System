@@ -32,3 +32,13 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.course.title}"
+    
+class LiveClass(models.Model):   # ← OUTSIDE Lesson
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    scheduled_time = models.DateTimeField()
+    room_name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"{self.title} - {self.course.title}"

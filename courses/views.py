@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Course, Lesson
+from .models import Course, Lesson, LiveClass
 from django.http import HttpResponseForbidden
+from django.shortcuts import redirect
+
 
 @login_required
 def create_course(request):
@@ -73,3 +75,13 @@ def course_detail(request, course_id):
         'course': course,
         'lessons': lessons
     })
+def join_live_class(request, class_id):
+    live_class = get_object_or_404(LiveClass, id=class_id)
+
+    context = {
+        "room_name": live_class.room_name,
+        "live_class": live_class
+    }
+
+    return render(request, "join_class.html", context)
+
