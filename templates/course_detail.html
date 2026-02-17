@@ -1,6 +1,12 @@
 <h2>{{ course.title }}</h2>
 <p>{{ course.description }}</p>
 
+{% if request.user == course.created_by %}
+<div style="background: #f3f3f3; padding: 8px; margin-top: 10px">
+  <strong>Course Code:</strong> {{ course.course_code }}
+</div>
+{% endif %}
+
 <hr />
 
 <h3>Lessons</h3>
