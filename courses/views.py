@@ -3,17 +3,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Course, Lesson, LiveClass
 from django.http import HttpResponseForbidden
-<<<<<<< HEAD
+
 from django.shortcuts import redirect
 
-=======
+
 import secrets
 import string
 
 def generate_course_code(length=8):
     characters = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(characters) for _ in range(length))
->>>>>>> origin/main
+
 
 @login_required
 def create_course(request):
