@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ live_class.title }}</title>
-    <script src="https://meet.jit.si/external_api.js"></script>
+    <title>Live Class</title>
 </head>
 <body>
 
-<h2>{{ live_class.title }}</h2>
+<h2>Live Class</h2>
+
+<script src="https://meet.jit.si/external_api.js"></script>
 
 <div id="meet"></div>
 
@@ -16,10 +17,7 @@
         roomName: "{{ room_name }}",
         width: "100%",
         height: 600,
-        parentNode: document.querySelector('#meet'),
-        userInfo: {
-            displayName: "{{ request.user.username }}"
-        }
+        parentNode: document.querySelector('#meet')
     };
     const api = new JitsiMeetExternalAPI(domain, options);
 </script>

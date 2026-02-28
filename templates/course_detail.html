@@ -1,3 +1,7 @@
+<p>User: {{ request.user }}</p>
+<p>User Type: {{ request.user.user_type }}</p>
+<p>Course Creator: {{ course.created_by }}</p>
+
 <h2>{{ course.title }}</h2>
 <p>{{ course.description }}</p>
 
@@ -23,20 +27,43 @@
 </ul>
 {% else %}
 <p>No lessons added yet.</p>
-{% endif %} {% if user.user_type == 'teacher' and user == course.created_by %}
+{% endif %}
+
+<!-- 🎥 LIVE CLASS SECTION -->
+{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
+<hr />
+<h3>Live Class</h3>
+
+<a href="{% url 'meeting' course.id %}">
+  <button style="padding:8px 15px; background-color:#4CAF50; color:white; border:none;">
+    🎥 Start Live Class
+  </button>
+</a>
+{% endif %}
+
+<!-- ➕ ADD LESSON SECTION -->
+{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
 <h3>Add New Lesson</h3>
 
 <form method="POST">
   {% csrf_token %}
+  
   <input
     type="text"
     name="title"
     placeholder="Lesson Title"
     required
-  /><br /><br />
-  <textarea name="content" placeholder="Lesson Content" required></textarea
-  ><br /><br />
+  />
+  <br /><br />
+
+  <textarea
+    name="content"
+    placeholder="Lesson Content"
+    required
+  ></textarea>
+  <br /><br />
+
   <button type="submit">Add Lesson</button>
 </form>
 {% endif %}

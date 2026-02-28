@@ -11,5 +11,6 @@ urlpatterns = [
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
      path("live-class/<int:class_id>/", views.join_live_class, name="join_live_class"),
      path('', lambda request: redirect('login')),
+     path('meeting/<int:course_id>/', views.meeting, name='meeting'),
 
 ]
