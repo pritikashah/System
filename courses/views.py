@@ -1,25 +1,48 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Course, Lesson, LiveClass
 from django.http import HttpResponseForbidden
+<<<<<<< HEAD
 from django.shortcuts import redirect
 
+=======
+import secrets
+import string
+
+def generate_course_code(length=8):
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(characters) for _ in range(length))
+>>>>>>> origin/main
 
 @login_required
 def create_course(request):
     if request.method == "POST":
         title = request.POST.get('title')
         description = request.POST.get('description')
+        manual_code = request.POST.get('course_code')
+        auto_generate = request.POST.get('auto_generate')
+
+        if auto_generate:
+            code = generate_course_code()
+        else:
+            if not manual_code:
+                messages.error(request, "Course code is required.")
+                return redirect('create_course')
+            code = manual_code
 
         Course.objects.create(
             title=title,
             description=description,
+            course_code=code,
             created_by=request.user
         )
 
+        messages.success(request, f"Course created successfully! Code: {code}")
         return redirect('teacher_dashboard')
 
     return render(request, 'create_course.html')
+
 
 @login_required
 def course_list(request):
@@ -30,11 +53,28 @@ def course_list(request):
 def enroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    if request.user.user_type == 'student':
-        if not course.students.filter(id=request.user.id).exists():
-            course.students.add(request.user)
+    if request.method == "POST":
+        if request.user in course.students.all():
+            messages.error(request, "You are already enrolled.")
+            return redirect('course_list')
 
-    return redirect('student_dashboard')
+        entered_code = request.POST.get('course_code')
+        print("Entered:", entered_code)
+        print("Actual:", course.course_code)
+        if not entered_code:
+            messages.error(request, "Course code is required.")
+            return redirect('course_list')
+
+        if entered_code != course.course_code:
+            messages.error(request, "Invalid course code.")
+            return redirect('course_list')
+
+        course.students.add(request.user)
+        messages.success(request, "Enrollment successful!")
+        return redirect('student_dashboard')
+
+    return redirect('course_list')
+
 
 @login_required
 def delete_course(request, course_id):
