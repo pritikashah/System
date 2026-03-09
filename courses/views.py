@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+
+from notifications.utils import create_notification
 from .models import Course, Lesson, LiveClass
 import secrets
 import string
@@ -66,6 +68,10 @@ def enroll_course(request, course_id):
             return redirect('course_list')
 
         course.students.add(request.user)
+        create_notification(
+            course.created_by,
+            f"{request.user.username} enrolled in your course {course.title}"
+        )
         messages.success(request, "Enrollment successful!")
         return redirect('student_dashboard')
 

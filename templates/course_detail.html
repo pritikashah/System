@@ -1,9 +1,9 @@
-<p>User: {{ request.user }}</p>
-<p>User Type: {{ request.user.user_type }}</p>
-<p>Course Creator: {{ course.created_by }}</p>
+{% extends "base.html" %}
+{% block content %}
 
 <h2>{{ course.title }}</h2>
 <p>{{ course.description }}</p>
+<p>Course Creator: {{ course.created_by }}</p>
 
 {% if request.user == course.created_by %}
 <div style="background: #f3f3f3; padding: 8px; margin-top: 10px">
@@ -67,3 +67,4 @@
   <button type="submit">Add Lesson</button>
 </form>
 {% endif %}
+{% endblock %}
