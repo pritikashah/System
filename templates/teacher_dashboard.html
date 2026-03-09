@@ -1,15 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
 <h1>Teacher Dashboard</h1>
 
 <a href="{% url 'create_course' %}">Create Course</a>
 
-<hr />
+<hr>
+
 <h2>Your Courses</h2>
 
 {% if courses %}
 <ul>
   {% for course in courses %}
   <li>
-    {{ course.title }}
+    <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
     <a href="{% url 'delete_course' course.id %}">Delete</a>
   </li>
   {% endfor %}
@@ -17,5 +21,8 @@
 {% else %}
 <p>No courses created yet.</p>
 {% endif %}
-<br />
+
+<br>
 <a href="{% url 'logout' %}">Logout</a>
+
+{% endblock %}
