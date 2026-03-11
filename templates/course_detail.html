@@ -86,13 +86,33 @@
 <ul>
 {% for material in materials %}
 <li>
-    {{ material.title }} (uploaded on {{ material.uploaded_at }})
+   {% for material in materials %}
+<li>
 
-    <a href="{{ material.file.url }}" download>Download</a>
+{% if material.file.name|lower|slice:"-4:" == ".pdf" %}
+📄
+{% elif material.file.name|lower|slice:"-4:" == ".ppt" %}
+📊
+{% elif material.file.name|lower|slice:"-5:" == ".pptx" %}
+📊
+{% elif material.file.name|lower|slice:"-4:" == ".doc" %}
+📘
+{% elif material.file.name|lower|slice:"-5:" == ".docx" %}
+📘
+{% else %}
+📁
+{% endif %}
 
-    {% if request.user == course.created_by %}
-        | <a href="{% url 'delete_material' material.id %}">Delete</a>
-    {% endif %}
+{{ material.title }} (uploaded on {{ material.uploaded_at }})
+
+<a href="{{ material.file.url }}" download>Download</a>
+
+{% if request.user == course.created_by %}
+| <a href="{% url 'delete_material' material.id %}">Delete</a>
+{% endif %}
+
+</li>
+{% endfor %}
 </li>
 {% endfor %}
 </ul>
