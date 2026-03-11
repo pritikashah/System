@@ -15,4 +15,6 @@ urlpatterns = [
      path('meeting/<int:course_id>/', views.meeting, name='meeting'),
      path('notifications/', include('notifications.urls')),
 
+     path('course/<int:course_id>/upload-material/', views.upload_material, name='upload_material'),
+
 ]

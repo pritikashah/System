@@ -48,7 +48,7 @@
 
 <form method="POST">
   {% csrf_token %}
-  
+
   <input
     type="text"
     name="title"
@@ -67,4 +67,31 @@
   <button type="submit">Add Lesson</button>
 </form>
 {% endif %}
+
+<hr />
+
+<!-- 📂 COURSE MATERIAL SECTION -->
+<h3>Course Materials</h3>
+
+<!-- Upload button for teacher -->
+{% if request.user == course.created_by %}
+<a href="{% url 'upload_material' course.id %}">
+  <button style="padding:8px 15px; background-color:#2196F3; color:white; border:none;">
+    Upload Material
+  </button>
+</a>
+<br><br>
+{% endif %}
+
+<ul>
+{% for material in materials %}
+    <li>
+        {{ material.title }} (uploaded on {{ material.uploaded_at }})
+        <a href="{{ material.file.url }}" download>Download</a>
+    </li>
+{% empty %}
+    <li>No materials uploaded yet.</li>
+{% endfor %}
+</ul>
+
 {% endblock %}

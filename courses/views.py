@@ -118,11 +118,16 @@ def course_detail(request, course_id):
     lessons = course.lessons.all()
     live_classes = LiveClass.objects.filter(course=course)
 
+    materials = course.materials.all()
+
     return render(request, 'course_detail.html', {
-        'course': course,
-        'lessons': lessons,
-        'live_classes': live_classes
-    })
+    'course': course,
+    'lessons': lessons,
+    'live_classes': live_classes,
+    'materials': materials
+})
+
+   
 
 
 @login_required
@@ -172,3 +177,31 @@ def meeting(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     room_name = f"course_{course.id}"
     return render(request, "meeting.html", {"room_name": room_name})
+
+from .models import Material
+
+@login_required
+def upload_material(request, course_id):
+
+    course = get_object_or_404(Course, id=course_id)
+
+    # Only teacher who created the course can upload
+    if request.user != course.created_by:
+        return redirect('teacher_dashboard')
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        file = request.FILES.get("file")
+
+        if title and file:
+            Material.objects.create(
+                course=course,
+                title=title,
+                file=file,
+                uploaded_by=request.user
+            )
+
+        return redirect("course_detail", course_id=course.id)
+
+    return render(request, "upload_material.html", {"course": course})
+
