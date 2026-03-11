@@ -205,3 +205,14 @@ def upload_material(request, course_id):
 
     return render(request, "upload_material.html", {"course": course})
 
+@login_required
+def delete_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    # Only teacher who created the course can delete
+    if request.user != material.course.created_by:
+        return redirect("course_detail", course_id=material.course.id)
+
+    material.delete()
+
+    return redirect("course_detail", course_id=material.course.id)

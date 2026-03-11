@@ -85,12 +85,15 @@
 
 <ul>
 {% for material in materials %}
-    <li>
-        {{ material.title }} (uploaded on {{ material.uploaded_at }})
-        <a href="{{ material.file.url }}" download>Download</a>
-    </li>
-{% empty %}
-    <li>No materials uploaded yet.</li>
+<li>
+    {{ material.title }} (uploaded on {{ material.uploaded_at }})
+
+    <a href="{{ material.file.url }}" download>Download</a>
+
+    {% if request.user == course.created_by %}
+        | <a href="{% url 'delete_material' material.id %}">Delete</a>
+    {% endif %}
+</li>
 {% endfor %}
 </ul>
 

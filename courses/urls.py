@@ -16,5 +16,6 @@ urlpatterns = [
      path('notifications/', include('notifications.urls')),
 
      path('course/<int:course_id>/upload-material/', views.upload_material, name='upload_material'),
+     path('delete-material/<int:material_id>/', views.delete_material, name='delete_material'),
 
 ]
