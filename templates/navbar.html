@@ -1,0 +1,82 @@
+<div
+  style="
+    display: flex;
+    justify-content: space-between;
+    background: #eee;
+    padding: 10px;
+  "
+>
+  <div>
+    <a href="#">Home</a>
+    <a href="#">Courses</a>
+  </div>
+
+  <div style="position: relative; display: inline-block;">
+
+    <!-- Bell Icon -->
+    <button id="notification-bell" style="background:none; border:none; font-size:20px; cursor:pointer;">
+        🔔 <span id="notification-count"></span>
+    </button>
+    <!-- Notification Dropdown -->
+    <div id="notification-dropdown" 
+         style="display:none; position:absolute; right:0; top:35px; background:white; 
+         width:300px; border:1px solid #ccc; padding:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+
+        <strong>Notifications</strong>
+        <hr>
+
+        <div id="notification-list">
+            Loading...
+        </div>
+
+    </div>
+  </div>
+</div>
+<script>
+
+const bell = document.getElementById("notification-bell");
+const dropdown = document.getElementById("notification-dropdown");
+
+bell.addEventListener("click", function() {
+
+    if (dropdown.style.display === "none") {
+        dropdown.style.display = "block";
+        loadNotifications();
+
+        fetch("/notifications/mark-read/")
+        .then(response => response.json())
+        .then(data => {
+          loadNotificationCount(); 
+        });
+    }else {
+        dropdown.style.display = "none";
+    }
+
+});
+
+function loadNotifications() {
+    fetch("/notifications/")
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById("notification-list").innerHTML = data;
+    });
+}
+
+function loadNotificationCount() {
+    fetch("/notifications/unread-count/")
+    .then(response => response.json())
+    .then(data => {
+        const countElement = document.getElementById("notification-count");
+
+        if (data.unread_count > 0) {
+            countElement.innerText = data.unread_count;
+        } else {
+            countElement.innerText = "";
+        }
+    });
+}
+
+setInterval(loadNotificationCount, 5000);
+loadNotificationCount();
+
+</script>

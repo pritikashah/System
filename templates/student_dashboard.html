@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Student Dashboard</h2>
+
+<h3>Your Enrolled Courses</h3>
+
+{% if courses %}
+<ul>
+  {% for course in courses %}
+  <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
+  {% endfor %}
+</ul>
+{% else %}
+<p>You have not enrolled in any courses yet.</p>
+{% endif %}
+
+<a href="{% url 'course_list' %}">View Courses</a>
+<br><br>
+<a href="{% url 'logout' %}">Logout</a>
+
+{% endblock %}
