@@ -29,7 +29,7 @@
 <p>No lessons added yet.</p>
 {% endif %}
 
-<!-- 🎥 LIVE CLASS SECTION -->
+<!--  LIVE CLASS SECTION -->
 {% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
 <h3>Live Class</h3>
@@ -41,7 +41,7 @@
 </a>
 {% endif %}
 
-<!-- ➕ ADD LESSON SECTION -->
+<!--  ADD LESSON SECTION -->
 {% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
 <h3>Add New Lesson</h3>
@@ -103,8 +103,13 @@
 📁
 {% endif %}
 
-{{ material.title }} (uploaded on {{ material.uploaded_at }})
+{{ material.title }} 
+(uploaded on {{ material.uploaded_at|date:"F j, Y, g:i a" }}) 
+– {{ material.file.size|filesizeformat }}
 
+
+<a href="{{ material.file.url }}" target="_blank">View</a>
+|
 <a href="{{ material.file.url }}" download>Download</a>
 
 {% if request.user == course.created_by %}
