@@ -3,15 +3,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from notifications.utils import create_notification
-from .models import Course, Lesson, LiveClass
+from .models import Course, Lesson, LiveClass, Material
+
 import secrets
 import string
 
+
+# -------------------- COURSE CODE GENERATION --------------------
 
 def generate_course_code(length=8):
     characters = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(characters) for _ in range(length))
 
+
+# -------------------- CREATE COURSE --------------------
 
 @login_required
 def create_course(request):
@@ -42,11 +47,15 @@ def create_course(request):
     return render(request, 'create_course.html')
 
 
+# -------------------- COURSE LIST --------------------
+
 @login_required
 def course_list(request):
     courses = Course.objects.all()
     return render(request, 'course_list.html', {'courses': courses})
 
+
+# -------------------- ENROLL COURSE --------------------
 
 @login_required
 def enroll_course(request, course_id):
@@ -68,15 +77,19 @@ def enroll_course(request, course_id):
             return redirect('course_list')
 
         course.students.add(request.user)
+
         create_notification(
             course.created_by,
             f"{request.user.username} enrolled in your course {course.title}"
         )
+
         messages.success(request, "Enrollment successful!")
         return redirect('student_dashboard')
 
     return redirect('course_list')
 
+
+# -------------------- DELETE COURSE --------------------
 
 @login_required
 def delete_course(request, course_id):
@@ -88,6 +101,8 @@ def delete_course(request, course_id):
     course.delete()
     return redirect('teacher_dashboard')
 
+
+# -------------------- COURSE DETAIL --------------------
 
 @login_required
 def course_detail(request, course_id):
@@ -103,7 +118,7 @@ def course_detail(request, course_id):
         if request.user != course.created_by:
             return redirect('teacher_dashboard')
 
-        # Teacher can add lessons
+        # Add lesson
         if request.method == "POST":
             title = request.POST.get('title')
             content = request.POST.get('content')
@@ -117,29 +132,26 @@ def course_detail(request, course_id):
 
     lessons = course.lessons.all()
     live_classes = LiveClass.objects.filter(course=course)
-
     materials = course.materials.all()
 
     return render(request, 'course_detail.html', {
-    'course': course,
-    'lessons': lessons,
-    'live_classes': live_classes,
-    'materials': materials
-})
+        'course': course,
+        'lessons': lessons,
+        'live_classes': live_classes,
+        'materials': materials
+    })
 
-   
 
+# -------------------- LIVE CLASS --------------------
 
 @login_required
 def join_live_class(request, class_id):
     live_class = get_object_or_404(LiveClass, id=class_id)
 
-    # Teacher access
     if request.user.user_type == "teacher":
         if live_class.teacher != request.user:
             return redirect("teacher_dashboard")
 
-    # Student access
     elif request.user.user_type == "student":
         if request.user not in live_class.course.students.all():
             return redirect("student_dashboard")
@@ -154,7 +166,6 @@ def join_live_class(request, class_id):
 def create_live_class(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Only course creator can create live class
     if request.user != course.created_by:
         return redirect('teacher_dashboard')
 
@@ -173,19 +184,21 @@ def create_live_class(request, course_id):
         return redirect('course_detail', course_id=course.id)
 
     return render(request, "create_live_class.html", {"course": course})
+
+
 def meeting(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     room_name = f"course_{course.id}"
     return render(request, "meeting.html", {"room_name": room_name})
 
-from .models import Material
+
+# -------------------- UPLOAD MATERIAL --------------------
 
 @login_required
 def upload_material(request, course_id):
 
     course = get_object_or_404(Course, id=course_id)
 
-    # Only teacher who created the course can upload
     if request.user != course.created_by:
         return redirect('teacher_dashboard')
 
@@ -193,23 +206,38 @@ def upload_material(request, course_id):
         title = request.POST.get("title")
         file = request.FILES.get("file")
 
-        if title and file:
-            Material.objects.create(
-                course=course,
-                title=title,
-                file=file,
-                uploaded_by=request.user
-            )
+        # Check file exists
+        if not file:
+            messages.error(request, "Please select a file.")
+            return redirect("course_detail", course_id=course.id)
+
+        # Validate file type
+        allowed_extensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx']
+        file_extension = file.name.split('.')[-1].lower()
+
+        if file_extension not in allowed_extensions:
+            messages.error(request, "Only PDF, DOC, and PPT files are allowed.")
+            return redirect("course_detail", course_id=course.id)
+
+        # Save
+        Material.objects.create(
+            course=course,
+            title=title,
+            file=file,
+            uploaded_by=request.user
+        )
 
         return redirect("course_detail", course_id=course.id)
 
     return render(request, "upload_material.html", {"course": course})
 
+
+# -------------------- DELETE MATERIAL --------------------
+
 @login_required
 def delete_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
-    # Only teacher who created the course can delete
     if request.user != material.course.created_by:
         return redirect("course_detail", course_id=material.course.id)
 
