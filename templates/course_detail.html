@@ -123,9 +123,17 @@
 
     {% if request.user.user_type == 'student' %}
         <br>
-        <a href="{% url 'submit_assignment' assignment.id %}">
-            Submit Assignment
-        </a>
+
+        {% if assignment_status[assignment.id] %}
+            <span style="color:green;">Submitted ✅</span>
+        {% else %}
+            <span style="color:red;">Not Submitted ❌</span>
+            <br>
+            <a href="{% url 'submit_assignment' assignment.id %}">
+                Submit Assignment
+            </a>
+        {% endif %}
+
     {% endif %}
 
     {% if request.user == course.created_by %}

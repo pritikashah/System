@@ -3,9 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from notifications.utils import create_notification
-from .models import Course, Lesson, LiveClass, Material
-
-from .models import Assignment, Submission
+from .models import Course, Lesson, LiveClass, Material, Assignment, Submission
 
 import secrets
 import string
@@ -110,17 +108,16 @@ def delete_course(request, course_id):
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Student access control
+    # Student access
     if request.user.user_type == 'student':
         if request.user not in course.students.all():
             return redirect('student_dashboard')
 
-    # Teacher access control
+    # Teacher access
     if request.user.user_type == 'teacher':
         if request.user != course.created_by:
             return redirect('teacher_dashboard')
 
-        # Add lesson
         if request.method == "POST":
             title = request.POST.get('title')
             content = request.POST.get('content')
@@ -137,13 +134,25 @@ def course_detail(request, course_id):
     materials = course.materials.all()
     assignments = course.assignments.all()
 
+    # ✅ Submission status
+    assignment_status = {}
+
+    if request.user.user_type == "student":
+        for assignment in assignments:
+            submitted = Submission.objects.filter(
+                assignment=assignment,
+                student=request.user
+            ).exists()
+
+            assignment_status[assignment.id] = submitted
+
     return render(request, 'course_detail.html', {
         'course': course,
         'lessons': lessons,
         'live_classes': live_classes,
         'materials': materials,
-        'assignments': assignments 
-        
+        'assignments': assignments,
+        'assignment_status': assignment_status
     })
 
 
@@ -197,11 +206,10 @@ def meeting(request, course_id):
     return render(request, "meeting.html", {"room_name": room_name})
 
 
-# -------------------- UPLOAD MATERIAL --------------------
+# -------------------- MATERIAL --------------------
 
 @login_required
 def upload_material(request, course_id):
-
     course = get_object_or_404(Course, id=course_id)
 
     if request.user != course.created_by:
@@ -211,12 +219,10 @@ def upload_material(request, course_id):
         title = request.POST.get("title")
         file = request.FILES.get("file")
 
-        # Check file exists
         if not file:
             messages.error(request, "Please select a file.")
             return redirect("course_detail", course_id=course.id)
 
-        # Validate file type
         allowed_extensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx']
         file_extension = file.name.split('.')[-1].lower()
 
@@ -224,7 +230,6 @@ def upload_material(request, course_id):
             messages.error(request, "Only PDF, DOC, and PPT files are allowed.")
             return redirect("course_detail", course_id=course.id)
 
-        # Save
         Material.objects.create(
             course=course,
             title=title,
@@ -237,8 +242,6 @@ def upload_material(request, course_id):
     return render(request, "upload_material.html", {"course": course})
 
 
-# -------------------- DELETE MATERIAL --------------------
-
 @login_required
 def delete_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
@@ -247,27 +250,24 @@ def delete_material(request, material_id):
         return redirect("course_detail", course_id=material.course.id)
 
     material.delete()
-
     return redirect("course_detail", course_id=material.course.id)
+
+
+# -------------------- ASSIGNMENT --------------------
 
 @login_required
 def create_assignment(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Only teacher can create
     if request.user != course.created_by:
         return redirect("teacher_dashboard")
 
     if request.method == "POST":
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-        due_date = request.POST.get("due_date")
-
         Assignment.objects.create(
             course=course,
-            title=title,
-            description=description,
-            due_date=due_date,
+            title=request.POST.get("title"),
+            description=request.POST.get("description"),
+            due_date=request.POST.get("due_date"),
             created_by=request.user
         )
 
@@ -275,9 +275,15 @@ def create_assignment(request, course_id):
 
     return render(request, "create_assignment.html", {"course": course})
 
+
 @login_required
 def submit_assignment(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
+
+    # ✅ Prevent duplicate submission
+    if Submission.objects.filter(assignment=assignment, student=request.user).exists():
+        messages.error(request, "You have already submitted this assignment.")
+        return redirect("course_detail", course_id=assignment.course.id)
 
     if request.method == "POST":
         file = request.FILES.get("file")
@@ -288,15 +294,16 @@ def submit_assignment(request, assignment_id):
             file=file
         )
 
+        messages.success(request, "Assignment submitted successfully!")
         return redirect("course_detail", course_id=assignment.course.id)
 
     return render(request, "submit_assignment.html", {"assignment": assignment})
+
 
 @login_required
 def view_submissions(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
 
-    # Only teacher can view
     if request.user != assignment.course.created_by:
         return redirect("teacher_dashboard")
 
