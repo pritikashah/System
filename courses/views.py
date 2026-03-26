@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone 
+from django.utils.timezone import localtime 
 
 from notifications.utils import create_notification
 from .models import Course, Lesson, LiveClass, Material, Assignment, Submission
@@ -149,7 +150,7 @@ def course_detail(request, course_id):
               assignment.submitted = True
 
             # 🔥 Check late submission
-              if submission.submitted_at > assignment.due_date:
+              if localtime(submission.submitted_at) > localtime(assignment.due_date):
                 assignment.is_late = True
               else:
                 assignment.is_late = False
