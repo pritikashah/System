@@ -291,3 +291,18 @@ def submit_assignment(request, assignment_id):
         return redirect("course_detail", course_id=assignment.course.id)
 
     return render(request, "submit_assignment.html", {"assignment": assignment})
+
+@login_required
+def view_submissions(request, assignment_id):
+    assignment = get_object_or_404(Assignment, id=assignment_id)
+
+    # Only teacher can view
+    if request.user != assignment.course.created_by:
+        return redirect("teacher_dashboard")
+
+    submissions = assignment.submissions.all()
+
+    return render(request, "view_submissions.html", {
+        "assignment": assignment,
+        "submissions": submissions
+    })
