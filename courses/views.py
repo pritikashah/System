@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from notifications.utils import create_notification
 from .models import Course, Lesson, LiveClass, Material
 
+from .models import Assignment, Submission
+
 import secrets
 import string
 
@@ -133,12 +135,15 @@ def course_detail(request, course_id):
     lessons = course.lessons.all()
     live_classes = LiveClass.objects.filter(course=course)
     materials = course.materials.all()
+    assignments = course.assignments.all()
 
     return render(request, 'course_detail.html', {
         'course': course,
         'lessons': lessons,
         'live_classes': live_classes,
-        'materials': materials
+        'materials': materials,
+        'assignments': assignments 
+        
     })
 
 
@@ -244,3 +249,45 @@ def delete_material(request, material_id):
     material.delete()
 
     return redirect("course_detail", course_id=material.course.id)
+
+@login_required
+def create_assignment(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    # Only teacher can create
+    if request.user != course.created_by:
+        return redirect("teacher_dashboard")
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        due_date = request.POST.get("due_date")
+
+        Assignment.objects.create(
+            course=course,
+            title=title,
+            description=description,
+            due_date=due_date,
+            created_by=request.user
+        )
+
+        return redirect("course_detail", course_id=course.id)
+
+    return render(request, "create_assignment.html", {"course": course})
+
+@login_required
+def submit_assignment(request, assignment_id):
+    assignment = get_object_or_404(Assignment, id=assignment_id)
+
+    if request.method == "POST":
+        file = request.FILES.get("file")
+
+        Submission.objects.create(
+            assignment=assignment,
+            student=request.user,
+            file=file
+        )
+
+        return redirect("course_detail", course_id=assignment.course.id)
+
+    return render(request, "submit_assignment.html", {"assignment": assignment})
