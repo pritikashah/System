@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone 
 
 from notifications.utils import create_notification
 from .models import Course, Lesson, LiveClass, Material, Assignment, Submission
@@ -135,13 +136,27 @@ def course_detail(request, course_id):
     assignments = course.assignments.all()
 
     # ✅ Submission status
+  
 
     if request.user.user_type == "student":
         for assignment in assignments:
-            assignment.submitted = Submission.objects.filter(
-                assignment=assignment,
-                student=request.user
-            ).exists()
+            submission = Submission.objects.filter(
+            assignment=assignment,
+            student=request.user
+            ).first()
+
+            if submission:
+              assignment.submitted = True
+
+            # 🔥 Check late submission
+              if submission.submitted_at > assignment.due_date:
+                assignment.is_late = True
+              else:
+                assignment.is_late = False
+
+        else:
+            assignment.submitted = False
+            assignment.is_late = False
 
     
     return render(request, 'course_detail.html', {

@@ -126,6 +126,11 @@
 
         {% if assignment.submitted %}
             <span style="color:green;">Submitted ✅</span>
+
+            {% if assignment.is_late %}
+                <span style="color:red;">(Late ❌)</span>
+            {% endif %}
+
         {% else %}
             <span style="color:red;">Not Submitted ❌</span>
             <br>
