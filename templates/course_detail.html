@@ -124,7 +124,7 @@
     {% if request.user.user_type == 'student' %}
         <br>
 
-        {% if assignment_status[assignment.id] %}
+        {% if assignment.submitted %}
             <span style="color:green;">Submitted ✅</span>
         {% else %}
             <span style="color:red;">Not Submitted ❌</span>

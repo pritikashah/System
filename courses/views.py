@@ -135,24 +135,21 @@ def course_detail(request, course_id):
     assignments = course.assignments.all()
 
     # ✅ Submission status
-    assignment_status = {}
 
     if request.user.user_type == "student":
         for assignment in assignments:
-            submitted = Submission.objects.filter(
+            assignment.submitted = Submission.objects.filter(
                 assignment=assignment,
                 student=request.user
             ).exists()
 
-            assignment_status[assignment.id] = submitted
-
+    
     return render(request, 'course_detail.html', {
         'course': course,
         'lessons': lessons,
         'live_classes': live_classes,
         'materials': materials,
         'assignments': assignments,
-        'assignment_status': assignment_status
     })
 
 
