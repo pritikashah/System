@@ -1,0 +1,7 @@
+<div style="border: 1px solid #ccc; padding: 10px; width: 300px">
+  {% for notification in notifications %}
+  <p>{{ notification.message }}</p>
+  {% empty %}
+  <p>No new notifications</p>
+  {% endfor %}
+</div>
