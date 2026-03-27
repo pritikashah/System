@@ -1,8 +1,8 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone 
-from django.utils.timezone import localtime 
+from django.utils import timezone
+from django.utils.timezone import localtime
 
 from notifications.utils import create_notification
 from .models import Course, Lesson, LiveClass, Material, Assignment, Submission
@@ -18,10 +18,21 @@ def generate_course_code(length=8):
     return ''.join(secrets.choice(characters) for _ in range(length))
 
 
+def generate_unique_course_code(length=8):
+    code = generate_course_code(length=length)
+    while Course.objects.filter(course_code=code).exists():
+        code = generate_course_code(length=length)
+    return code
+
+
 # -------------------- CREATE COURSE --------------------
 
 @login_required
 def create_course(request):
+    if request.user.user_type != "teacher":
+        messages.error(request, "Only teachers can create courses.")
+        return redirect("student_dashboard")
+
     if request.method == "POST":
         title = request.POST.get('title')
         description = request.POST.get('description')
@@ -29,12 +40,15 @@ def create_course(request):
         auto_generate = request.POST.get('auto_generate')
 
         if auto_generate:
-            code = generate_course_code()
+            code = generate_unique_course_code()
         else:
             if not manual_code:
                 messages.error(request, "Course code is required.")
                 return redirect('create_course')
             code = manual_code
+            if Course.objects.filter(course_code=code).exists():
+                messages.error(request, "Course code already exists. Please choose another.")
+                return redirect("create_course")
 
         Course.objects.create(
             title=title,
@@ -61,6 +75,10 @@ def course_list(request):
 
 @login_required
 def enroll_course(request, course_id):
+    if request.user.user_type != "student":
+        messages.error(request, "Only students can enroll in courses.")
+        return redirect("teacher_dashboard")
+
     course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
@@ -132,40 +150,35 @@ def course_detail(request, course_id):
                 )
 
     lessons = course.lessons.all()
-    live_classes = LiveClass.objects.filter(course=course)
+    live_classes = LiveClass.objects.filter(course=course).select_related("teacher").order_by("scheduled_time")
     materials = course.materials.all()
     assignments = course.assignments.all()
-
-    # ✅ Submission status
-  
+    now = timezone.now()
 
     if request.user.user_type == "student":
         for assignment in assignments:
             submission = Submission.objects.filter(
-            assignment=assignment,
-            student=request.user
+                assignment=assignment,
+                student=request.user
             ).first()
 
             if submission:
-              assignment.submitted = True
-
-            # 🔥 Check late submission
-              if localtime(submission.submitted_at) > localtime(assignment.due_date):
-                assignment.is_late = True
-              else:
+                assignment.submitted = True
+                assignment.is_late = localtime(submission.submitted_at) > localtime(assignment.due_date)
+            else:
+                assignment.submitted = False
                 assignment.is_late = False
 
-        else:
-            assignment.submitted = False
-            assignment.is_late = False
+    for live_class in live_classes:
+        live_class.can_join_now = now >= live_class.scheduled_time
 
-    
     return render(request, 'course_detail.html', {
         'course': course,
         'lessons': lessons,
         'live_classes': live_classes,
         'materials': materials,
         'assignments': assignments,
+        'now': localtime(now),
     })
 
 
@@ -182,6 +195,9 @@ def join_live_class(request, class_id):
     elif request.user.user_type == "student":
         if request.user not in live_class.course.students.all():
             return redirect("student_dashboard")
+        if timezone.now() < live_class.scheduled_time:
+            messages.error(request, "This class has not started yet.")
+            return redirect("student_dashboard")
 
     return render(request, "join_class.html", {
         "live_class": live_class,
@@ -193,10 +209,6 @@ def join_live_class(request, class_id):
 def create_live_class(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-<<<<<<< HEAD
-    
-=======
->>>>>>> 97f365fb96060eb641efe7e050aa4abf1673d8ee
     if request.user != course.created_by:
         return redirect('teacher_dashboard')
 
@@ -211,19 +223,30 @@ def create_live_class(request, course_id):
                 title=title,
                 scheduled_time=scheduled_time
             )
+            messages.success(request, "Live class scheduled successfully.")
+        else:
+            messages.error(request, "Both title and scheduled time are required.")
 
         return redirect('course_detail', course_id=course.id)
 
     return render(request, "create_live_class.html", {"course": course})
 
 
+@login_required
 def meeting(request, course_id):
     course = get_object_or_404(Course, id=course_id)
+
+    if request.user.user_type == "teacher":
+        if request.user != course.created_by:
+            return redirect("teacher_dashboard")
+    elif request.user.user_type == "student":
+        if request.user not in course.students.all():
+            return redirect("student_dashboard")
+    else:
+        return redirect("login")
+
     room_name = f"course_{course.id}"
     return render(request, "meeting.html", {"room_name": room_name})
-
-<<<<<<< HEAD
-=======
 
 # -------------------- MATERIAL --------------------
 
@@ -299,7 +322,14 @@ def create_assignment(request, course_id):
 def submit_assignment(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
 
-    # ✅ Prevent duplicate submission
+    if request.user.user_type != "student":
+        messages.error(request, "Only students can submit assignments.")
+        return redirect("teacher_dashboard")
+
+    if request.user not in assignment.course.students.all():
+        messages.error(request, "You must be enrolled in this course to submit.")
+        return redirect("course_list")
+
     if Submission.objects.filter(assignment=assignment, student=request.user).exists():
         messages.error(request, "You have already submitted this assignment.")
         return redirect("course_detail", course_id=assignment.course.id)
@@ -332,4 +362,3 @@ def view_submissions(request, assignment_id):
         "assignment": assignment,
         "submissions": submissions
     })
->>>>>>> 97f365fb96060eb641efe7e050aa4abf1673d8ee

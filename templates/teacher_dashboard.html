@@ -3,6 +3,23 @@
 
 <h1>Teacher Dashboard</h1>
 
+<form method="GET" style="margin-bottom: 16px;">
+  <input
+    type="text"
+    name="q"
+    value="{{ search_query }}"
+    list="teacher-search-suggestions"
+    placeholder="Search your courses and classes..."
+    style="min-width: 320px;"
+  />
+  <datalist id="teacher-search-suggestions">
+    {% for suggestion in search_suggestions %}
+      <option value="{{ suggestion }}"></option>
+    {% endfor %}
+  </datalist>
+  <button type="submit">Search</button>
+</form>
+
 <a href="{% url 'create_course' %}">Create Course</a>
 
 <hr>
@@ -20,6 +37,24 @@
 </ul>
 {% else %}
 <p>No courses created yet.</p>
+{% endif %}
+
+<hr>
+
+<h2>Scheduled Live Classes</h2>
+{% if live_classes %}
+<ul>
+  {% for live_class in live_classes %}
+    <li>
+      <strong>{{ live_class.title }}</strong> - {{ live_class.course.title }}<br />
+      Scheduled: {{ live_class.scheduled_time|date:"F j, Y, g:i a" }}<br />
+      <a href="{% url 'join_live_class' live_class.id %}">Open class room</a>
+    </li>
+    <br />
+  {% endfor %}
+</ul>
+{% else %}
+<p>No live classes scheduled yet.</p>
 {% endif %}
 
 <br>
