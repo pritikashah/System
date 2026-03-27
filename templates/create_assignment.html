@@ -1,0 +1,22 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create Assignment</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label for="title">Title:</label><br>
+    <input id="title" type="text" name="title" placeholder="Enter assignment title" required><br><br>
+
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description" placeholder="Enter description"></textarea><br><br>
+
+    <label for="due_date">Due Date:</label><br>
+    <input id="due_date" type="datetime-local" name="due_date" required><br><br>
+
+    <button type="submit">Create Assignment</button>
+</form>
+
+{% endblock %}
