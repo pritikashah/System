@@ -63,7 +63,12 @@
 {% else %}
 <p>No live classes scheduled yet.</p>
 {% endif %}
-
+{% if request.user == course.created_by %}
+<hr>
+<a href="{% url 'teacher_attendance' course.id %}">
+    <button>View Attendance</button>
+</a>
+{% endif %}
 <!-- ➕ ADD LESSON SECTION -->
 {% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />

@@ -94,7 +94,7 @@ class Assignment(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     due_date = models.DateTimeField()
-
+    deadline_notified = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -125,3 +125,29 @@ class Submission(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.assignment.title}"
+    
+class Attendance(models.Model):
+    live_class = models.ForeignKey(
+        LiveClass,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'user_type': 'student'}
+    )
+
+    first_join_time = models.DateTimeField(auto_now_add=True)
+    join_count = models.IntegerField(default=1)
+
+    STATUS_CHOICES = (
+        ('present', 'Present (On Time)'),
+        ('late', 'Present (Late)'),
+    )
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    class Meta:
+        unique_together = ('live_class', 'student')

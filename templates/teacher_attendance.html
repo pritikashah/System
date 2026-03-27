@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom: 20px;">📊 Attendance - {{ course.title }}</h2>
+
+{% for item in data %}
+
+<div style="border:1px solid #ddd; padding:15px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+
+    <h3 style="margin-bottom:5px;">
+        {{ item.live_class.title }}
+    </h3>
+
+    <p style="color:#666; font-size:14px;">
+        {{ item.live_class.scheduled_time|date:"F j, Y • g:i A" }}
+    </p>
+
+    <hr>
+
+    <!-- ✅ PRESENT -->
+    <h4 style="color:green;">✔ Present</h4>
+
+    <ul style="list-style:none; padding-left:0;">
+        {% for record in item.records %}
+        <li style="padding:6px 0; border-bottom:1px solid #eee;">
+
+            <strong>{{ record.student.username }}</strong>
+
+            <span style="font-size:13px; color:#666;">
+                • Joined: {{ record.first_join_time|date:"g:i A" }}
+            </span>
+
+            {% if record.status == 'present' %}
+                <span style="color:green; font-weight:bold;"> (On Time)</span>
+            {% elif record.status == 'late' %}
+                <span style="color:orange; font-weight:bold;"> (Late)</span>
+            {% endif %}
+
+        </li>
+        {% empty %}
+        <li style="color:#999;">No students attended</li>
+        {% endfor %}
+    </ul>
+
+    <!-- ❌ ABSENT -->
+    <h4 style="color:red; margin-top:15px;">✖ Absent</h4>
+
+    <ul style="list-style:none; padding-left:0;">
+        {% for student in item.absent_students %}
+        <li style="padding:6px 0; border-bottom:1px solid #eee;">
+            {{ student.username }}
+        </li>
+        {% empty %}
+        <li style="color:#999;">No absentees 🎉</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}

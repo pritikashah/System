@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Overall Attendance</h2>
+
+<p>Total Classes: {{ total_classes }}</p>
+<p>Attended: {{ attended_classes }}</p>
+
+<!-- 🔵 OVERALL BAR -->
+<div style="background:#ddd; width:300px; margin-bottom:20px;">
+  <div style="width: {{ overall_percentage }}%; background:blue; color:white; padding:4px;">
+    {{ overall_percentage }}%
+  </div>
+</div>
+
+<hr>
+
+<h3>Course-wise</h3>
+
+{% for c in course_data %}
+
+<p>{{ c.course.title }}</p>
+
+<div style="background:#ddd; width:300px; margin-bottom:15px;">
+  <div style="width: {{ c.percentage }}%; background:green; color:white; padding:4px;">
+    {{ c.percentage }}%
+  </div>
+</div>
+
+{% endfor %}
+
+{% endblock %}
