@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Submissions for {{ assignment.title }}</h2>
+
+<ul>
+{% for submission in submissions %}
+    <li>
+        <strong>Student:</strong> {{ submission.student.username }}<br>
+        <strong>Submitted at:</strong> {{ submission.submitted_at }}<br>
+
+        <a href="{{ submission.file.url }}" target="_blank">
+            View File
+        </a>
+    </li>
+    <hr>
+{% empty %}
+    <li>No submissions yet.</li>
+{% endfor %}
+</ul>
+
+{% endblock %}

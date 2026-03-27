@@ -15,4 +15,12 @@ urlpatterns = [
      path('meeting/<int:course_id>/', views.meeting, name='meeting'),
      path('notifications/', include('notifications.urls')),
 
+     path('course/<int:course_id>/upload-material/', views.upload_material, name='upload_material'),
+     path('delete-material/<int:material_id>/', views.delete_material, name='delete_material'),
+     
+     path('create-assignment/<int:course_id>/', views.create_assignment, name='create_assignment'),
+     path('submit-assignment/<int:assignment_id>/', views.submit_assignment, name='submit_assignment'),
+     
+     path('view-submissions/<int:assignment_id>/', views.view_submissions, name='view_submissions'),
+
 ]
