@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Schedule Live Class</h2>
+<p><strong>Course:</strong> {{ course.title }}</p>
+
+<form method="POST">
+  {% csrf_token %}
+
+  <label for="title">Class title</label><br />
+  <input id="title" type="text" name="title" required />
+  <br /><br />
+
+  <label for="scheduled_time">Scheduled time</label><br />
+  <input id="scheduled_time" type="datetime-local" name="scheduled_time" required />
+  <br /><br />
+
+  <button type="submit">Schedule</button>
+</form>
+
+<br />
+<a href="{% url 'course_detail' course.id %}">Back to course</a>
+
+{% endblock %}

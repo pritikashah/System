@@ -29,18 +29,46 @@
 <p>No lessons added yet.</p>
 {% endif %}
 
-<!-- 🎥 LIVE CLASS SECTION -->
-{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
-<h3>Live Class</h3>
+<h3>Live Classes</h3>
 
-<a href="{% url 'meeting' course.id %}">
+{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
+<a href="{% url 'create_live_class' course.id %}">
   <button style="padding:8px 15px; background-color:#4CAF50; color:white; border:none;">
-    🎥 Start Live Class
+    Schedule Live Class
   </button>
 </a>
+<br /><br />
 {% endif %}
 
+{% if live_classes %}
+<ul>
+  {% for live_class in live_classes %}
+  <li>
+    <strong>{{ live_class.title }}</strong> -
+    {{ live_class.scheduled_time|date:"F j, Y, g:i a" }}
+
+    {% if request.user == course.created_by %}
+      | <a href="{% url 'join_live_class' live_class.id %}">Open Room</a>
+    {% elif request.user.user_type == 'student' %}
+      {% if live_class.can_join_now %}
+        | <a href="{% url 'join_live_class' live_class.id %}">Join Now</a>
+      {% else %}
+        | <span style="color: #777;">Not started yet</span>
+      {% endif %}
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No live classes scheduled yet.</p>
+{% endif %}
+{% if request.user == course.created_by %}
+<hr>
+<a href="{% url 'teacher_attendance' course.id %}">
+    <button>View Attendance</button>
+</a>
+{% endif %}
 <!-- ➕ ADD LESSON SECTION -->
 {% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
@@ -48,23 +76,110 @@
 
 <form method="POST">
   {% csrf_token %}
-  
-  <input
-    type="text"
-    name="title"
-    placeholder="Lesson Title"
-    required
-  />
+
+  <input type="text" name="title" placeholder="Lesson Title" required />
   <br /><br />
 
-  <textarea
-    name="content"
-    placeholder="Lesson Content"
-    required
-  ></textarea>
+  <textarea name="content" placeholder="Lesson Content" required></textarea>
   <br /><br />
 
   <button type="submit">Add Lesson</button>
 </form>
 {% endif %}
+
+<hr />
+
+<!-- 📂 COURSE MATERIAL SECTION -->
+<h3>Course Materials</h3>
+
+{% if request.user == course.created_by %}
+<a href="{% url 'upload_material' course.id %}">
+  <button style="padding:8px 15px; background-color:#2196F3; color:white; border:none;">
+    Upload Material
+  </button>
+</a>
+<br><br>
+{% endif %}
+
+<ul>
+{% for material in materials %}
+<li>
+
+{% if material.file.name|lower|slice:"-4:" == ".pdf" %}
+📄
+{% elif material.file.name|lower|slice:"-4:" == ".ppt" or material.file.name|lower|slice:"-5:" == ".pptx" %}
+📊
+{% elif material.file.name|lower|slice:"-4:" == ".doc" or material.file.name|lower|slice:"-5:" == ".docx" %}
+📘
+{% else %}
+📁
+{% endif %}
+
+{{ material.title }} 
+(uploaded on {{ material.uploaded_at|date:"F j, Y, g:i a" }}) 
+– {{ material.file.size|filesizeformat }}
+
+<a href="{{ material.file.url }}" target="_blank">View</a> |
+<a href="{{ material.file.url }}" download>Download</a>
+
+{% if request.user == course.created_by %}
+| <a href="{% url 'delete_material' material.id %}">Delete</a>
+{% endif %}
+
+</li>
+{% empty %}
+<li>No materials uploaded yet.</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<!-- 📘 ASSIGNMENT SECTION -->
+<h3>Assignments</h3>
+
+{% if request.user == course.created_by %}
+<a href="{% url 'create_assignment' course.id %}">
+    <button>Create Assignment</button>
+</a>
+{% endif %}
+
+<ul>
+{% for assignment in assignments %}
+<li>
+    <strong>{{ assignment.title }}</strong><br>
+    Due: {{ assignment.due_date }}
+
+    {% if request.user.user_type == 'student' %}
+        <br>
+
+        {% if assignment.submitted %}
+            <span style="color:green;">Submitted ✅</span>
+
+            {% if assignment.is_late %}
+                <span style="color:red;">(Late ❌)</span>
+            {% endif %}
+
+        {% else %}
+            <span style="color:red;">Not Submitted ❌</span>
+            <br>
+            <a href="{% url 'submit_assignment' assignment.id %}">
+                Submit Assignment
+            </a>
+        {% endif %}
+
+    {% endif %}
+
+    {% if request.user == course.created_by %}
+        <br>
+        <a href="{% url 'view_submissions' assignment.id %}">
+            View Submissions
+        </a>
+    {% endif %}
+
+</li>
+{% empty %}
+<li>No assignments yet.</li>
+{% endfor %}
+</ul>
+
 {% endblock %}

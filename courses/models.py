@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import uuid
 
+
 class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -25,6 +26,7 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+
 class Lesson(models.Model):
     course = models.ForeignKey(
         Course,
@@ -37,9 +39,14 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.course.title}"
-    
+
+
 class LiveClass(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="live_classes")
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="live_classes"
+    )
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -56,3 +63,91 @@ class LiveClass(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.course.title}"
+
+
+class Material(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="materials"
+    )
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to="course_materials/")
+
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Assignment(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="assignments"
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    due_date = models.DateTimeField()
+    deadline_notified = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'user_type': 'teacher'}
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Submission(models.Model):
+    assignment = models.ForeignKey(
+        Assignment,
+        on_delete=models.CASCADE,
+        related_name="submissions"
+    )
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'user_type': 'student'}
+    )
+
+    file = models.FileField(upload_to="submissions/")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.username} - {self.assignment.title}"
+    
+class Attendance(models.Model):
+    live_class = models.ForeignKey(
+        LiveClass,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'user_type': 'student'}
+    )
+
+    first_join_time = models.DateTimeField(auto_now_add=True)
+    join_count = models.IntegerField(default=1)
+
+    STATUS_CHOICES = (
+        ('present', 'Present (On Time)'),
+        ('late', 'Present (Late)'),
+    )
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    class Meta:
+        unique_together = ('live_class', 'student')
