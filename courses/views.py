@@ -143,7 +143,7 @@ def join_live_class(request, class_id):
 def create_live_class(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Only course creator can create live class
+    
     if request.user != course.created_by:
         return redirect('teacher_dashboard')
 
@@ -166,3 +166,4 @@ def meeting(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     room_name = f"course_{course.id}"
     return render(request, "meeting.html", {"room_name": room_name})
+
