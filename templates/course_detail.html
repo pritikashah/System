@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
 
 <h2>{{ course.title }}</h2>
 <p>{{ course.description }}</p>

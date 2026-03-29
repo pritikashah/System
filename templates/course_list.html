@@ -1,3 +1,6 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
 <h2>Available Courses</h2>
 
 {% for course in courses %}
