@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html>
+{% load static %}
 <head>
     <title>Live Class</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
 </head>
 <body>
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
 
 <h2>Live Class</h2>
 

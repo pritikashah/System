@@ -1,3 +1,6 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
 <h2>{{ course.title }} - Attendance</h2>
 
 <p>Total Classes: {{ total_classes }}</p>
