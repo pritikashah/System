@@ -3,16 +3,57 @@
 
 <h2>Student Dashboard</h2>
 
+<form method="GET" style="margin-bottom: 16px;">
+  <input
+    type="text"
+    name="q"
+    value="{{ search_query }}"
+    list="student-search-suggestions"
+    placeholder="Search courses, teachers, topics..."
+    style="min-width: 320px;"
+  />
+  <datalist id="student-search-suggestions">
+    {% for suggestion in search_suggestions %}
+      <option value="{{ suggestion }}"></option>
+    {% endfor %}
+  </datalist>
+  <button type="submit">Search</button>
+</form>
+
 <h3>Your Enrolled Courses</h3>
 
 {% if courses %}
 <ul>
   {% for course in courses %}
-  <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
+  <li>
+    <a href="{% url 'course_detail' course.id %}">{{ course.title }}</a>
+  </li>
   {% endfor %}
 </ul>
 {% else %}
 <p>You have not enrolled in any courses yet.</p>
+{% endif %}
+
+<hr />
+<a href="{% url 'overall_attendance' %}">My Attendance</a>
+<h3>Join Live Classes</h3>
+{% if live_classes %}
+<ul>
+  {% for live_class in live_classes %}
+    <li>
+      <strong>{{ live_class.title }}</strong> - {{ live_class.course.title }}<br />
+      Scheduled: {{ live_class.scheduled_time|date:"F j, Y, g:i a" }}<br />
+      {% if live_class.can_join_now %}
+        <a href="{% url 'join_live_class' live_class.id %}">Join now</a>
+      {% else %}
+        <span style="color: #777;">Not started yet</span>
+      {% endif %}
+    </li>
+    <br />
+  {% endfor %}
+</ul>
+{% else %}
+<p>No live classes scheduled for your enrolled courses.</p>
 {% endif %}
 
 <a href="{% url 'course_list' %}">View Courses</a>

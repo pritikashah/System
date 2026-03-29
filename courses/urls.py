@@ -11,6 +11,7 @@ urlpatterns = [
     path('delete-course/<int:course_id>/', views.delete_course, name='delete_course'),
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
      path("live-class/<int:class_id>/", views.join_live_class, name="join_live_class"),
+     path("create-live-class/<int:course_id>/", views.create_live_class, name="create_live_class"),
      path('', lambda request: redirect('login')),
      path('meeting/<int:course_id>/', views.meeting, name='meeting'),
      path('notifications/', include('notifications.urls')),
@@ -22,5 +23,7 @@ urlpatterns = [
      path('submit-assignment/<int:assignment_id>/', views.submit_assignment, name='submit_assignment'),
      
      path('view-submissions/<int:assignment_id>/', views.view_submissions, name='view_submissions'),
-
+    path('course/<int:course_id>/attendance/', views.course_attendance, name='course_attendance'),
+    path('attendance/', views.overall_attendance, name='overall_attendance'),
+    path('teacher-attendance/<int:course_id>/', views.teacher_attendance_view, name='teacher_attendance'),
 ]

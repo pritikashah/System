@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
 
 <h2>{{ course.title }}</h2>
 <p>{{ course.description }}</p>
@@ -29,18 +30,46 @@
 <p>No lessons added yet.</p>
 {% endif %}
 
-<!-- 🎥 LIVE CLASS SECTION -->
-{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />
-<h3>Live Class</h3>
+<h3>Live Classes</h3>
 
-<a href="{% url 'meeting' course.id %}">
+{% if request.user.user_type == 'teacher' and request.user == course.created_by %}
+<a href="{% url 'create_live_class' course.id %}">
   <button style="padding:8px 15px; background-color:#4CAF50; color:white; border:none;">
-    🎥 Start Live Class
+    Schedule Live Class
   </button>
 </a>
+<br /><br />
 {% endif %}
 
+{% if live_classes %}
+<ul>
+  {% for live_class in live_classes %}
+  <li>
+    <strong>{{ live_class.title }}</strong> -
+    {{ live_class.scheduled_time|date:"F j, Y, g:i a" }}
+
+    {% if request.user == course.created_by %}
+      | <a href="{% url 'join_live_class' live_class.id %}">Open Room</a>
+    {% elif request.user.user_type == 'student' %}
+      {% if live_class.can_join_now %}
+        | <a href="{% url 'join_live_class' live_class.id %}">Join Now</a>
+      {% else %}
+        | <span style="color: #777;">Not started yet</span>
+      {% endif %}
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No live classes scheduled yet.</p>
+{% endif %}
+{% if request.user == course.created_by %}
+<hr>
+<a href="{% url 'teacher_attendance' course.id %}">
+    <button>View Attendance</button>
+</a>
+{% endif %}
 <!-- ➕ ADD LESSON SECTION -->
 {% if request.user.user_type == 'teacher' and request.user == course.created_by %}
 <hr />

@@ -1,0 +1,28 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+<a class="top-logout-link" href="{% url 'logout' %}">Logout</a>
+<h2>{{ course.title }} - Attendance</h2>
+
+<p>Total Classes: {{ total_classes }}</p>
+<p>Attended: {{ attended_classes }}</p>
+<p>Percentage: {{ percentage }}%</p>
+
+<div style="background:#ddd; width:300px;">
+  <div style="width:{{ percentage }}%; background:green; color:white;">
+    {{ percentage }}%
+  </div>
+</div>
+
+<hr>
+
+<h3>Class History</h3>
+
+<ul>
+{% for record in records %}
+<li>
+Class: {{ record.live_class.title }} |
+Joined: {{ record.first_join_time }} |
+Status: {{ record.get_status_display }}
+</li>
+{% endfor %}
+</ul>
